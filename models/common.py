@@ -182,7 +182,7 @@ class C3TR(C3):
     def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
         super().__init__(c1, c2, n, shortcut, g, e)
         c_ = int(c2 * e)
-        self.m = TransformerBlock(c_, c_, 4/, n)
+        self.m = TransformerBlock(c_, c_, 4, n)
 
 
 # class ResNet(nn.Module):

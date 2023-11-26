@@ -4,6 +4,19 @@
 nc: {num_classes}  # number of classes
 depth_multiple: 0.33  # model depth multiple
 width_multiple: 0.50  # layer channel multiple
+optimizer:
+  type: Adam
+  lr: 0.001
+  weight_decay: 0.0005
+lr_scheduler:
+  type: CosineAnnealingWarmRestarts
+  T_0: 10  # initial restart period
+  T_mult: 2  # multiplier for next restart period
+  eta_min: 0.0001  # minimum learning rate
+train_mosaic: True
+train_mixup: 0.5  # You can experiment with different mixup probabilities
+initialize:
+  type: kaiming_uniform_
 anchors:
   - [10,13, 16,30, 33,23]  # P3/8
   - [30,61, 62,45, 59,119]  # P4/16

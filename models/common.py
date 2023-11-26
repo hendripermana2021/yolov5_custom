@@ -52,7 +52,7 @@ class Conv(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p), groups=g, bias=False)
         self.bn = nn.BatchNorm2d(c2)
-        self.act = nn.ReLU(inplace=False) if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+        self.act = nn.ReLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
 
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))
@@ -307,17 +307,24 @@ class Focus(nn.Module):
         # return self.conv(self.contract(x))
 
 
+import torch.nn as nn
+
 class GhostConv(nn.Module):
     # Ghost Convolution https://github.com/huawei-noah/ghostnet
     def __init__(self, c1, c2, k=1, s=1, g=1, act=True):  # ch_in, ch_out, kernel, stride, groups
-        super().__init__()
+        super(GhostConv, self).__init__()
         c_ = c2 // 2  # hidden channels
-        self.cv1 = Conv(c1, c_, k, s, None, g, act)
-        self.cv2 = Conv(c_, c_, 5, 1, None, c_, act)
+        self.cv1 = nn.Conv2d(c1, c_, kernel_size=k, stride=s, padding=k // 2, groups=g, bias=False)
+        self.bn = nn.BatchNorm2d(c_)
+        self.act = nn.ReLU(inplace=True) if act else nn.Identity()
+
+        # Using kernel size 5 for the second convolution
+        self.cv2 = nn.Conv2d(c_, c_, kernel_size=5, stride=1, padding=2, groups=c_, bias=False)
 
     def forward(self, x):
-        y = self.cv1(x)
+        y = self.act(self.bn(self.cv1(x)))
         return torch.cat((y, self.cv2(y)), 1)
+
 
 
 class GhostBottleneck(nn.Module):
